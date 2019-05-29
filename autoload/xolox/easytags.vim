@@ -78,19 +78,25 @@ function! xolox#easytags#check_ctags_compatible(name, min_version) " {{{2
     call xolox#misc#msg#debug("easytags.vim %s: Command '%s' returned nonzero exit code %i!", g:xolox#easytags#version, a:name, result['exit_code'])
   else
     " Extract the version number from the output.
-    let pattern = '\(Exuberant\|Universal\) Ctags \zs\(\d\+\(\.\d\+\)*\|Development\)'
-    let g:easytags_ctags_version = matchstr(get(result['stdout'], 0, ''), pattern)
-    " Deal with development builds.
-    if g:easytags_ctags_version == 'Development'
-      call xolox#misc#msg#debug("easytags.vim %s: Assuming development build is compatible ..", g:xolox#easytags#version, a:name)
-      return 1
-    endif
-    " Make sure the version is compatible.
-    if xolox#misc#version#at_least(a:min_version, g:easytags_ctags_version)
-      call xolox#misc#msg#debug("easytags.vim %s: Version is compatible! :-)", g:xolox#easytags#version)
-      return 1
-    else
-      call xolox#misc#msg#debug("easytags.vim %s: Version is not compatible! :-(", g:xolox#easytags#version)
+    let pattern = '\(\w\+\) Ctags \(\d\+\(\.\d\+\)*\|Development\)'
+    let match = matchlist(get(result['stdout'], 0, ''), pattern)
+    let g:easytags_ctags_fork = match[1]
+    let g:easytags_ctags_version = match[2]
+    if g:easytags_ctags_fork != '' && g:easytags_ctags_version != ''
+      call xolox#misc#msg#debug("easytags.vim %s: Detected %s Ctags %s", g:xolox#easytags#version, g:easytags_ctags_fork, g:easytags_ctags_version)
+      if g:easytags_ctags_fork == 'Universal'
+        " All versions should be compatible.
+        call xolox#misc#msg#debug("easytags.vim %s: Assuming all versions is compatible ..", g:xolox#easytags#version)
+        return 1
+      elseif g:easytags_ctags_fork == 'Exuberant'
+        " Make sure the version is compatible.
+        if xolox#misc#version#at_least(a:min_version, g:easytags_ctags_version)
+          call xolox#misc#msg#debug("easytags.vim %s: Version is compatible! :-)", g:xolox#easytags#version)
+          return 1
+        else
+          call xolox#misc#msg#debug("easytags.vim %s: Version is not compatible! :-(", g:xolox#easytags#version)
+        endif
+      endif
     endif
   endif
   call xolox#misc#msg#debug("easytags.vim %s: Standard output of command: %s", g:xolox#easytags#version, string(result['stdout']))
