@@ -170,7 +170,7 @@ function! xolox#easytags#autoload(event) " {{{2
 endfunction
 
 function! xolox#easytags#update(silent, filter_tags, filenames) " {{{2
-  let async = xolox#misc#option#get('easytags_async', 0)
+  let async = xolox#misc#option#get('easytags_async', 1)
   call g:xolox#easytags#update_timer.start()
   try
     let have_args = !empty(a:filenames)
